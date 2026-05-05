@@ -1,0 +1,56 @@
+name: Sync fork with upstream
+
+# Keeps this fork's default branch in lockstep with the upstream
+# (parent) repository every 4 hours by calling GitHub's
+# merge-upstream API — the same operation as clicking "Sync fork"
+# on the web UI. Conflicts cause the workflow to fail visibly so
+# you can investigate.
+
+on:
+  schedule:
+    # Every 4 hours. Minute 17 deliberately avoids the on-the-hour
+    # cron stampede on GitHub's shared runners (everyone defaults to
+    # `0 */4 * * *`, which queues your job behind thousands of others).
+    - cron: '17 */4 * * *'
+  workflow_dispatch:
+
+# Don't let two sync runs race each other. cancel-in-progress is
+# false because a half-finished merge is worse than waiting.
+concurrency:
+  group: sync-fork
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync default branch from upstream
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          # Branch to sync. Override here if the fork tracks a
+          # different default (e.g. master, develop).
+          BRANCH: main
+        run: |
+          set -euo pipefail
+
+          # Resolve the upstream parent through the GitHub API. If
+          # this repo isn't a fork there is nothing to sync — fail loud.
+          UPSTREAM=$(gh api "repos/$REPO" --jq '.parent.full_name // empty')
+          if [ -z "$UPSTREAM" ]; then
+            echo "::error::$REPO is not a fork — nothing to sync."
+            exit 1
+          fi
+          echo "Upstream detected: $UPSTREAM"
+          echo "Syncing $REPO:$BRANCH from $UPSTREAM..."
+
+          # gh repo sync wraps POST /repos/{owner}/{repo}/merge-upstream.
+          # Behaviour:
+          #   * fast-forward → branch advanced, exit 0
+          #   * none         → already up to date, exit 0
+          #   * conflict     → exit non-zero so this workflow fails and
+          #                    you get an email / red x to investigate.
+          gh repo sync "$REPO" --branch "$BRANCH"
