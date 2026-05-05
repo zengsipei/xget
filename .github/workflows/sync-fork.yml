@@ -29,7 +29,10 @@ jobs:
     steps:
       - name: Sync default branch from upstream
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Custom PAT with `workflow` scope so we can merge upstream
+          # commits that touch .github/workflows/ — the default
+          # GITHUB_TOKEN is forbidden from modifying workflow files.
+          GH_TOKEN: ${{ secrets.SYNC_FORK_TOKEN }}
           REPO: ${{ github.repository }}
           # Branch to sync. Override here if the fork tracks a
           # different default (e.g. master, develop).
