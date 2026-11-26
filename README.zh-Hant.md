@@ -1,3 +1,15 @@
+<!-- renoise-banner -->
+<p align="center">
+  <a href="https://renoise.ai/plugin?utm_medium=github&utm_source=xixu">
+    <img src="https://raw.githubusercontent.com/renoise-ai/renoise-plugins-official/main/assets/icon.svg" alt="Renoise" width="96">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://renoise.ai/plugin?utm_medium=github&utm_source=xixu">Renoise MCP</a> · <a href="https://github.com/renoise-ai/renoise-plugins-official">Renoise Skills &amp; CLI</a><br><br>
+  <strong>模型、資料集、套件下載全面加速，再把素材變成口播影片，完全不用手搓時間線。</strong>
+</p>
+
 <div align="center">
 
 # Xget 🚀
@@ -21,9 +33,6 @@
 [English](README.md) | [汉语（简体）](README.zh-Hans.md) | **漢語（繁體）**
 
 </div>
-
-> [!TIP]
-> 歡迎加入「Xget 開源與 AI 交流群」，一起交流開源專案、AI 應用、工程實踐、效率工具和獨立開發；如果你也在做產品、寫程式、折騰專案或者對開源和 AI 感興趣，歡迎[**進群**](https://file.xi-xu.me/QR%20Codes/%E7%BE%A4%E4%BA%8C%E7%BB%B4%E7%A0%81.png)認識更多認真做事、樂於分享的朋友。
 
 面向開發者資源的超高效能、安全、一體化加速引擎，為程式碼託管、模型和資料集中心、軟體包管理儲存庫、容器註冊表、AI 推理供應商等提供統一、高效的加速，同時替你處理快取、重試、安全回應標頭，以及各種協定相容行為。
 
