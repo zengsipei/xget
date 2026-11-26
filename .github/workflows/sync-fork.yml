@@ -5,6 +5,10 @@ name: Sync fork with upstream
 # merge-upstream API — the same operation as clicking "Sync fork"
 # on the web UI. Conflicts cause the workflow to fail visibly so
 # you can investigate.
+#
+# This fork is not a plain mirror: it also carries this workflow file,
+# which upstream does not have. Every sync therefore merges upstream
+# into main instead of hard-resetting it.
 
 on:
   schedule:
@@ -80,8 +84,28 @@ jobs:
           #   * none         → already up to date, exit 0
           #   * conflict     → exit non-zero so this workflow fails and
           #                    you get an email / red x to investigate.
-          if ! gh repo sync "$REPO" --branch "$BRANCH"; then
-            rc=$?
+          #
+          # --source is explicit on purpose. Without it gh resolves the
+          # parent itself through a GraphQL query (RepositoryFindParent)
+          # that comes back null for repo-scoped Actions credentials,
+          # and gh then reports the misleading
+          #   "can't determine source repository for <repo> because
+          #    repository is not fork"
+          # instead of the real merge error.
+          #
+          # Do not add --force: it hard-resets the branch to upstream, and
+          # upstream has no copy of this file, so the sync job would
+          # delete itself. If upstream rewrites its history again (it did
+          # once, in 2026), the run fails with "diverging changes"; repair
+          # the ancestry by hand instead:
+          #   git fetch upstream main
+          #   git merge --allow-unrelated-histories upstream/main
+          #   git push
+          set +e
+          gh repo sync "$REPO" --source "$UPSTREAM" --branch "$BRANCH"
+          rc=$?
+          set -e
+          if [ "$rc" -ne 0 ]; then
             if [ "$HAS_SYNC_TOKEN" != "true" ]; then
               echo "::warning::Sync failed. If the error above mentions 'workflow scope', provision SYNC_FORK_TOKEN (PAT with workflow scope) and re-run. The fallback expression in this workflow will pick it up automatically — no file edit needed."
             fi
